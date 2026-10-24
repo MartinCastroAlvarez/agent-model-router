@@ -10,6 +10,7 @@ from __future__ import annotations
 import sqlite3
 import threading
 import time
+import weakref
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -101,6 +102,8 @@ class MetricsStore:
             p.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
             target = str(p)
         self.conn = sqlite3.connect(target, check_same_thread=False)
+        # Close the connection when the store is collected, even if close() is never called.
+        self._finalizer = weakref.finalize(self, self.conn.close)
         self.conn.executescript(_SCHEMA)
         if path is not None:
             Path(target).chmod(0o600)
@@ -167,7 +170,7 @@ class MetricsStore:
 
     def close(self) -> None:
         with self._lock:
-            self.conn.close()
+            self._finalizer()
 
 
 def format_stats(summary: dict[str, Any], baseline_name: str) -> str:
