@@ -1,0 +1,26 @@
+# Local first, hosted only for hard turns, with a local decision model.
+backends:
+  ollama: {kind: ollama}
+  vllm:
+    kind: openai
+    base_url: http://gpu-box.lan:8000/v1
+    allow_insecure: true     # plain http on your LAN
+    trusted: true            # prompts with secrets may go here
+  anthropic:
+    kind: anthropic
+    base_url: https://api.anthropic.com
+    api_key_env: ANTHROPIC_API_KEY
+models:
+  - {name: small, backend: ollama, model: qwen3:1.7b, quality: 0.3,
+     price: {input: 0.01, output: 0.02}, context: 40960, effort: reasoning_effort}
+  - {name: coder, backend: vllm, model: Qwen/Qwen3-Coder-30B-A3B-Instruct, quality: 0.65,
+     price: {input: 0.1, output: 0.2}, context: 131072, max_output: 16384}
+  - {name: sonnet, backend: anthropic, model: claude-sonnet-5-5, quality: 0.85,
+     price: {input: 2.0, output: 10.0}, context: 1000000, max_output: 128000, effort: adaptive}
+classifier:
+  mode: decision
+  decision_model: small
+  decision_timeout_s: 2
+budgets:
+  daily_usd: 3
+  on_exceeded: cheapest

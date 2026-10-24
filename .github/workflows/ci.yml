@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint (ruff + mypy + bandit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install Poetry
+        run: pipx install poetry
+      - name: Install dependencies
+        run: poetry install --no-interaction
+      - name: ruff check
+        run: poetry run ruff check agent_model_router tests examples
+      - name: ruff format --check
+        run: poetry run ruff format --check agent_model_router tests examples
+      - name: mypy
+        run: poetry run mypy agent_model_router
+      - name: bandit
+        run: poetry run bandit -c pyproject.toml -q -r agent_model_router
+
+  audit:
+    name: pip-audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install Poetry
+        run: pipx install poetry
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-root
+      - name: pip-audit
+        run: |
+          # Upgrade pip first so its own advisories don't fail the audit -
+          # pip is tooling, not a shipped dependency.
+          poetry run python -m pip install --upgrade -q pip
+          poetry run pip-audit
+
+  test:
+    name: Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Poetry
+        run: pipx install poetry
+      - name: Install dependencies
+        run: poetry install --no-interaction
+      - name: Run pytest (fake backends, translation, streaming, classifier, security)
+        run: poetry run pytest -q
+      - name: Local demo (fake backend + router on loopback sockets)
+        run: poetry run python -m examples.local_demo
+      - name: Build the wheel and check the bundled data is inside
+        run: |
+          poetry build -q
+          python - <<'PY'
+          import glob, zipfile
+          names = zipfile.ZipFile(glob.glob("dist/*.whl")[0]).namelist()
+          for f in ("default.yaml", "weights.json", "synthetic.jsonl", "eval.jsonl", "py.typed"):
+              assert any(n.endswith(f) for n in names), f
+          print("wheel ok:", len(names), "files")
+          PY

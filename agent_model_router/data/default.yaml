@@ -1,0 +1,99 @@
+# agent-model-router default config.
+#
+# Copy it with `agent-model-router init` and edit. Runs 100% locally on ollama by default;
+# the hosted Anthropic backend is disabled until you enable it and export your own key.
+
+server:
+  host: 127.0.0.1          # loopback only; anything else needs allow_remote: true
+  port: 8787
+  auth: true               # clients send the local token as x-api-key or Bearer
+  key_env: AGENT_ROUTER_TOKEN
+  key_file: ~/.config/agent-model-router/token
+
+backends:
+  ollama:
+    kind: ollama           # OpenAI-compatible /v1/chat/completions on the local ollama
+    base_url: http://127.0.0.1:11434/v1
+  # llamacpp:
+  #   kind: openai         # llama.cpp server, vLLM, LM Studio, ...
+  #   base_url: http://127.0.0.1:8080/v1
+  anthropic:
+    kind: anthropic        # https only; your own key, never the client's
+    base_url: https://api.anthropic.com
+    api_key_env: ANTHROPIC_API_KEY
+    enabled: false
+
+# quality: 0..1, how hard a task the model handles well (tune on your own prompts).
+# price: USD per million tokens. Local prices are notional (compute), used for savings stats.
+models:
+  - name: small
+    backend: ollama
+    model: qwen3:1.7b
+    quality: 0.3
+    price: {input: 0.01, output: 0.02}
+    context: 40960
+    max_output: 8192
+    effort: reasoning_effort
+  - name: medium
+    backend: ollama
+    model: qwen3:8b
+    quality: 0.55
+    price: {input: 0.05, output: 0.10}
+    context: 40960
+    max_output: 8192
+    effort: reasoning_effort
+  - name: large
+    backend: ollama
+    model: qwen3-coder:30b
+    quality: 0.75
+    price: {input: 0.20, output: 0.40}
+    context: 262144
+    max_output: 16384
+    effort: none
+  - name: haiku
+    backend: anthropic
+    model: claude-haiku-4-5-20251001
+    quality: 0.6
+    price: {input: 1.0, output: 5.0}
+    context: 200000
+    max_output: 64000
+    effort: budget         # thinking.budget_tokens
+  - name: sonnet
+    backend: anthropic
+    model: claude-sonnet-5-5
+    quality: 0.85
+    price: {input: 2.0, output: 10.0}
+    context: 1000000
+    max_output: 128000
+    effort: adaptive       # thinking: adaptive + output_config.effort
+  - name: opus
+    backend: anthropic
+    model: claude-opus-5-5
+    quality: 0.95
+    price: {input: 4.0, output: 20.0}
+    context: 1000000
+    max_output: 128000
+    effort: adaptive
+
+policy:
+  # The cheapest model whose quality clears the bar for the request's difficulty wins.
+  quality: {trivial: 0.0, easy: 0.3, medium: 0.55, hard: 0.75, expert: 0.9}
+  effort:  {trivial: none, easy: low, medium: medium, hard: high, expert: high}
+  sticky: ratchet          # within a conversation the model only moves up (warm caches)
+  idle_reset_minutes: 30
+  max_attempts: 3          # escalate to the next model on 5xx / 429 / timeouts / refusals
+  escalate_on_refusal: true
+  # baseline_model: opus   # savings are measured against this (default: priciest usable)
+
+classifier:
+  mode: heuristic          # heuristic | decision (a small local model judges, heuristic floor)
+  # decision_model: small
+  # decision_timeout_s: 3
+
+budgets:
+  daily_usd: null          # e.g. 5.0; when spent, route to the cheapest model (or reject)
+  on_exceeded: cheapest
+
+metrics:
+  enabled: true
+  db: ~/.local/share/agent-model-router/routes.sqlite3

@@ -1,0 +1,149 @@
+[tool.poetry]
+name = "agent-model-router"
+version = "0.1.0"
+description = "A local proxy for coding agents that picks the model and reasoning effort per request: explainable classifier, cheapest model that clears the bar, sticky per conversation, Anthropic and OpenAI APIs in and out, ollama by default."
+authors = ["Martín Castro Álvarez <martincastro.10.5@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/MartinCastroAlvarez/agent-model-router"
+repository = "https://github.com/MartinCastroAlvarez/agent-model-router"
+documentation = "https://github.com/MartinCastroAlvarez/agent-model-router#readme"
+keywords = [
+    "llm",
+    "model-routing",
+    "llm-router",
+    "claude-code",
+    "ollama",
+    "openai-compatible",
+    "anthropic",
+    "proxy",
+    "reasoning-effort",
+    "ai-agents",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Environment :: Web Environment",
+    "Framework :: AsyncIO",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: Proxy Servers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+packages = [{ include = "agent_model_router" }]
+include = [
+    { path = "LICENSE", format = ["sdist", "wheel"] },
+]
+
+[tool.poetry.scripts]
+agent-model-router = "agent_model_router.cli:main"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+starlette = ">=0.47,<2"
+httpx = ">=0.27,<1"
+pyyaml = "^6.0"
+uvicorn = ">=0.30,<1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.0"
+pytest-cov = ">=5,<8"
+pytest-asyncio = ">=0.24,<2"
+respx = ">=0.22,<1"
+ruff = ">=0.6"
+mypy = "^1.11 || ^2.0"
+types-pyyaml = "^6.0"
+bandit = "^1.7"
+pip-audit = "^2.7"
+
+[build-system]
+requires = ["poetry-core>=1.6.0"]
+build-backend = "poetry.core.masonry.api"
+
+# --------------------------------------------------------------------------- #
+# Ruff — lint + format
+# --------------------------------------------------------------------------- #
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E", "W",       # pycodestyle
+    "F",            # pyflakes
+    "I",            # isort
+    "B",            # bugbear
+    "S",            # bandit-style security
+    "UP",           # pyupgrade
+    "SIM",          # simplify
+    "RET",          # returns
+    "PIE",          # misc
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["E402", "S101", "S104", "S105", "S106", "S108", "S311", "E501"]
+"examples/**/*.py" = ["S101", "S105", "S106"]
+# The synthetic dataset needs a seeded, reproducible PRNG; it is never used for security.
+"agent_model_router/classifier/dataset.py" = ["S311", "E501"]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+known-first-party = ["agent_model_router", "tests", "examples"]
+
+# --------------------------------------------------------------------------- #
+# Pytest
+# --------------------------------------------------------------------------- #
+[tool.pytest.ini_options]
+python_files = ["test_*.py"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=agent_model_router",
+    "--cov-report=term-missing",
+]
+testpaths = ["tests"]
+filterwarnings = ["error"]
+
+# --------------------------------------------------------------------------- #
+# MyPy
+# --------------------------------------------------------------------------- #
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+
+# --------------------------------------------------------------------------- #
+# Coverage
+# --------------------------------------------------------------------------- #
+[tool.coverage.run]
+branch = true
+source = ["agent_model_router"]
+
+[tool.coverage.report]
+fail_under = 85
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
+omit = [
+    "agent_model_router/__main__.py",
+]
+
+# --------------------------------------------------------------------------- #
+# Bandit
+# --------------------------------------------------------------------------- #
+[tool.bandit]
+exclude_dirs = ["tests", "examples", ".venv", "build", "dist"]
+skips = ["B311"]  # random.Random only seeds the synthetic dataset (see ruff per-file note)

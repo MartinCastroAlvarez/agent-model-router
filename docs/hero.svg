@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5eead4"/>
+    </marker>
+    <marker id="arrowdim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="1280" height="640" fill="#0b1020"/>
+  <g font-family="Inter, 'Helvetica Neue', Arial, sans-serif">
+    <text x="80" y="118" font-size="64" font-weight="700" fill="#f8fafc">agent-model-router</text>
+    <text x="80" y="170" font-size="27" fill="#94a3b8">Picks the model and reasoning effort for every coding-agent request.</text>
+    <text x="80" y="206" font-size="22" fill="#5eead4">cheapest model that clears the bar · sticky per conversation · 100% local by default</text>
+
+    <!-- client -->
+    <rect x="80" y="290" width="220" height="190" rx="16" fill="#111a33" stroke="#334155" stroke-width="2"/>
+    <text x="190" y="340" font-size="24" font-weight="600" fill="#e2e8f0" text-anchor="middle">Coding agent</text>
+    <text x="190" y="378" font-size="18" fill="#94a3b8" text-anchor="middle">Claude Code</text>
+    <text x="190" y="404" font-size="18" fill="#94a3b8" text-anchor="middle">OpenAI-compatible</text>
+    <text x="190" y="446" font-size="14" fill="#64748b" text-anchor="middle" font-family="Menlo, monospace">/v1/messages</text>
+    <text x="190" y="468" font-size="14" fill="#64748b" text-anchor="middle" font-family="Menlo, monospace">/v1/chat/completions</text>
+
+    <line x1="304" y1="385" x2="384" y2="385" stroke="#5eead4" stroke-width="3" marker-end="url(#arrow)"/>
+
+    <!-- router -->
+    <rect x="390" y="262" width="400" height="246" rx="18" fill="#0f1d2e" stroke="#5eead4" stroke-width="2.5"/>
+    <text x="590" y="304" font-size="24" font-weight="700" fill="#5eead4" text-anchor="middle">router · 127.0.0.1</text>
+    <rect x="416" y="324" width="166" height="70" rx="10" fill="#132238" stroke="#334155"/>
+    <text x="499" y="354" font-size="18" fill="#e2e8f0" text-anchor="middle">classify</text>
+    <text x="499" y="378" font-size="14" fill="#94a3b8" text-anchor="middle">task · difficulty</text>
+    <rect x="598" y="324" width="166" height="70" rx="10" fill="#132238" stroke="#334155"/>
+    <text x="681" y="354" font-size="18" fill="#e2e8f0" text-anchor="middle">policy</text>
+    <text x="681" y="378" font-size="14" fill="#94a3b8" text-anchor="middle">bar · ratchet · budget</text>
+    <rect x="416" y="410" width="348" height="70" rx="10" fill="#132238" stroke="#334155"/>
+    <text x="590" y="440" font-size="18" fill="#e2e8f0" text-anchor="middle">translate · stream · escalate</text>
+    <text x="590" y="464" font-size="14" fill="#94a3b8" text-anchor="middle" font-family="Menlo, monospace">x-router-model · x-router-reason</text>
+
+    <!-- routes -->
+    <line x1="794" y1="330" x2="884" y2="300" stroke="#475569" stroke-width="2.5" marker-end="url(#arrowdim)"/>
+    <line x1="794" y1="385" x2="884" y2="385" stroke="#475569" stroke-width="2.5" marker-end="url(#arrowdim)"/>
+    <line x1="794" y1="440" x2="884" y2="470" stroke="#5eead4" stroke-width="3" marker-end="url(#arrow)"/>
+
+    <g font-size="18">
+      <rect x="890" y="268" width="310" height="64" rx="12" fill="#111a33" stroke="#334155"/>
+      <rect x="904" y="290" width="40" height="20" rx="4" fill="#334155"/>
+      <text x="958" y="296" fill="#e2e8f0">"rename x" → small</text>
+      <text x="958" y="320" font-size="15" fill="#94a3b8">qwen3 1.7B · effort none</text>
+
+      <rect x="890" y="353" width="310" height="64" rx="12" fill="#111a33" stroke="#334155"/>
+      <rect x="904" y="373" width="40" height="24" rx="4" fill="#475569"/>
+      <text x="958" y="381" fill="#e2e8f0">"review PR" → medium</text>
+      <text x="958" y="405" font-size="15" fill="#94a3b8">qwen3 8B · effort medium</text>
+
+      <rect x="890" y="438" width="310" height="64" rx="12" fill="#111a33" stroke="#5eead4" stroke-width="2"/>
+      <rect x="904" y="455" width="40" height="30" rx="4" fill="#5eead4"/>
+      <text x="958" y="466" fill="#e2e8f0">"fix the race" → large</text>
+      <text x="958" y="490" font-size="15" fill="#94a3b8">coder 30B / your Claude · high</text>
+    </g>
+
+    <text x="80" y="580" font-size="19" fill="#64748b">ollama · llama.cpp · vLLM · LM Studio · hosted providers with your own key   —   inspired by jev-router</text>
+  </g>
+</svg>

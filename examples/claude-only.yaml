@@ -1,0 +1,21 @@
+# Claude Code with a pool of Claude models: export ANTHROPIC_API_KEY (your key), then
+#   agent-model-router --config examples/claude-only.yaml serve
+#   ANTHROPIC_BASE_URL=http://127.0.0.1:8787 ANTHROPIC_AUTH_TOKEN=$(agent-model-router token) claude
+backends:
+  anthropic:
+    kind: anthropic
+    base_url: https://api.anthropic.com
+    api_key_env: ANTHROPIC_API_KEY
+models:
+  - {name: haiku, backend: anthropic, model: claude-haiku-4-5-20251001, quality: 0.6,
+     price: {input: 1.0, output: 5.0}, context: 200000, max_output: 64000, effort: budget}
+  - {name: sonnet, backend: anthropic, model: claude-sonnet-5-5, quality: 0.85,
+     price: {input: 2.0, output: 10.0}, context: 1000000, max_output: 128000, effort: adaptive}
+  - {name: opus, backend: anthropic, model: claude-opus-5-5, quality: 0.95,
+     price: {input: 4.0, output: 20.0}, context: 1000000, max_output: 128000, effort: adaptive}
+policy:
+  quality: {trivial: 0.0, easy: 0.5, medium: 0.8, hard: 0.8, expert: 0.9}
+  effort: {trivial: low, easy: low, medium: medium, hard: high, expert: high}
+  baseline_model: opus
+budgets:
+  daily_usd: 10

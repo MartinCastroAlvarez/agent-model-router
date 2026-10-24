@@ -1,0 +1,55 @@
+{
+  "bias": -2.253482,
+  "features": [
+    "chars",
+    "lines",
+    "context",
+    "code_blocks",
+    "files",
+    "tools",
+    "tool_followup",
+    "turns",
+    "kw_trivial",
+    "kw_hard",
+    "kw_debug",
+    "kw_plan",
+    "kw_review",
+    "kw_scope",
+    "kw_sensitive",
+    "traceback",
+    "short_question",
+    "steps"
+  ],
+  "meta": {
+    "epochs": 1500,
+    "l2": 0.001,
+    "lr": 2.0,
+    "rows": 1500,
+    "thresholds": [
+      0.143,
+      0.409,
+      0.641,
+      0.919
+    ]
+  },
+  "weights": {
+    "chars": 2.214026,
+    "code_blocks": 0.223867,
+    "context": 0.241004,
+    "files": 0.199504,
+    "kw_debug": 0.557783,
+    "kw_hard": 2.325853,
+    "kw_plan": 0.940241,
+    "kw_review": 0.953436,
+    "kw_scope": 0.401726,
+    "kw_sensitive": 1.206636,
+    "kw_trivial": -1.774801,
+    "lines": 0.093347,
+    "short_question": 0.141515,
+    "steps": 0.0,
+    "tool_followup": -0.015308,
+    "tools": -0.049503,
+    "traceback": 0.082868,
+    "turns": 0.42211
+  }
+}
